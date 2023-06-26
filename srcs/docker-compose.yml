@@ -1,0 +1,74 @@
+#   docker-compose INCEPTION olmartin 26.06.23  V26.13
+
+version: '3.9'
+
+
+services:
+
+  mariadb:
+    container_name: mariadb
+    build:
+      context: requirements/mariadb
+      dockerfile: Dockerfile
+    image: mariadb
+    env_file: .env
+    networks:
+    - myNet
+    volumes:
+    - maria_data:/var/lib/mysql
+    - wp_data:/var/www/wordpress
+    expose:
+    - "3306"
+    restart: on-failure
+
+  nginx:
+    container_name: nginx
+    depends_on:
+    - wordpress
+    build:
+      context: requirements/nginx
+      dockerfile: Dockerfile
+    image: nginx
+    env_file: .env
+    networks:
+    - myNet
+    volumes:
+    - wp_data:/var/www/wordpress
+    ports:
+    - 443:443
+    restart: on-failure
+
+  wordpress:
+    container_name: wordpress
+    depends_on:
+    - mariadb
+    build:
+      context: requirements/wordpress
+      dockerfile: Dockerfile
+    image: wordpress
+    env_file: .env
+    networks:
+    - myNet
+    volumes:
+    - wp_data:/var/www/wordpress 
+    expose:
+    - "9000"
+    restart: on-failure
+    
+networks:
+  myNet:
+    driver: bridge
+
+volumes:
+  wp_data:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '${HOME}/data/wordpress'
+  maria_data:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '${HOME}/data/mariadb'

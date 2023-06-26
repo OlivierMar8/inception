@@ -1,34 +1,28 @@
-#Makefile   inception
+#	Makefile INCEPTION olmartin 26.06.23  V26.13
 
-SRCS		= main.cpp
+all:
+	sudo mkdir -p $(HOME)/data/wordpress
+	sudo mkdir -p $(HOME)/data/mariadb
+	docker compose -f srcs/docker-compose.yml up --detach --build
 
-OBJS		= $(SRCS:.cpp=.o)
+up:
+	docker compose -f srcs/docker-compose.yml up --detach
 
-NAME		= inception 
+stop:
+	docker compose -f srcs/docker-compose.yml stop 
 
-CC			= c++-12
+down:
+	docker compose -f srcs/docker-compose.yml down
 
-RM			= rm -f
+clean:	down
 
-CFLAGS		= -Wall -Werror -Wextra -std=c++98 -fsanitize=address
+	docker system prune -af
+	
+fclean:	clean 
 
+	sudo rm -rf $(HOME)/data/
+	
+  
+re: 	clean all
 
-all:		${NAME}
-
-%.o: %.cpp
-			$(CC) $(CFLAGS) -c $< 
-
-${NAME}:	$(OBJS)
-			$(CC) $(CFLAGS) -o $(NAME) $(OBJS)
-			
-
-.PHONY:		all clean fclean  re
-
-clean:	
-			$(RM) $(OBJS)
-
-
-fclean:		clean
-			$(RM) $(NAME)
-
-re:			fclean all
+.PHONY: all up stop down clean fcleani re
